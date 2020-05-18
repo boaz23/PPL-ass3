@@ -6,4 +6,5 @@
 *.code-workspace
 node_modules/
 ~$*.docx
+package-lock.json
 208386227_315452797*
