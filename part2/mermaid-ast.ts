@@ -80,3 +80,7 @@ export const isEdgeLabel = (x: any): x is EdgeLabel => x.tag === "EdgeLabel";
 export const isGraphContent = (x: any): x is GraphContent  => isAtomicGraph(x) || isCompoundGraph(x);
 export const isDirection = (x: any): x is Direction => isTD(x) || isLR(x);
 export const isNode = (x: any): x is Node => isNodeDecl(x) || isNodeRef(x);
+
+
+
+export const contentIsEmpty = (content: any): content is undefined => content === undefined;

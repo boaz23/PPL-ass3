@@ -1,7 +1,8 @@
 import { Result, makeFailure, mapResult, makeOk, bind } from "../shared/result";
-import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, NodeDecl } from "./mermaid-ast";
-import { Program, Parsed, isCExp, isProgram, isExp, Exp } from "./L4-ast";
+import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, NodeDecl, isGraph, hasContent, contentIsEmpty } from "./mermaid-ast";
+import { Program, Parsed, isCExp, isProgram, isExp, Exp, isLetrecExp, isSetExp } from "./L4-ast";
 import { reduce } from "ramda";
+import { isDefineExp, makeVarDecl, isAppExp, isNumExp, isBoolExp, isStrExp, isPrimOp, isVarDecl, isVarRef, isIfExp, isProcExp, isBinding, isLetExp } from "../L3/L3-ast";
 
 export const makeVarGen = (v: string): () => string => {
     let count: number = 0;
@@ -35,7 +36,26 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
     const makeUniqueSetExpId = makeVarGen("SetExp");
 
     const makeNodeDeclFromExp = (exp: Exp): Result<NodeDecl> =>
-        makeFailure<NodeDecl>("");
+        isDefineExp(exp) ? makeOk(makeNodeDecl(makeUniqueDefineExpId(),"DefineExp")) :
+        isNumExp(exp) ? makeOk(makeNodeDecl(makeUniqueNumExpId(),"NumExp")) :
+        isBoolExp(exp) ? makeOk(makeNodeDecl(makeUniqueBoolExpId(),"BoolExp")) :
+        isStrExp(exp) ? makeOk(makeNodeDecl(makeUniqueStrExpId(),"StrExp")) :
+        isPrimOp(exp) ? makeOk(makeNodeDecl(makeUniquePrimOpId(),"PrimOp")) :
+        isVarRef(exp) ? makeOk(makeNodeDecl(makeUniqueVarRefId(),"VarRef")) :
+        isVarDecl(exp) ? makeOk(makeNodeDecl(makeUniqueVarDeclId(),"VarDecl")) :
+        isAppExp(exp) ? makeOk(makeNodeDecl(makeUniqueAppExpId(),"AppExp")) :
+        isDefineExp(exp) ?/*TODO:  How to know if its rands */ makeOk(makeNodeDecl(makeUniqueRandsId(),"Rands")) :
+        isIfExp(exp) ? makeOk(makeNodeDecl(makeUniqueIfExpId(),"IfExp")) :
+        isProcExp(exp) ? makeOk(makeNodeDecl(makeUniqueProcExpId(),"ProcExp")) :
+        isDefineExp(exp) ?/*TODO:  How to know if its params */ makeOk(makeNodeDecl(makeUniqueParamsId(),"Params")) :
+        isDefineExp(exp) ?/*TODO:  How to know if its params */ makeOk(makeNodeDecl(makeUniqueBodyId(),"Body")) :
+        isBinding(exp) ? makeOk(makeNodeDecl(makeUniqueBindingId(),"Binding")) :
+        isLetExp(exp) ? makeOk(makeNodeDecl(makeUniqueLetExpId(),"LetExp")) :
+        isDefineExp(exp) ?/*TODO:  Wth is the difference between binding and bidgins */makeOk(makeNodeDecl(makeUniqueBindingsId(),"Bindings")) :
+        isLetExp(exp) ? makeOk(makeNodeDecl(makeUniqueLitExpId(),"LitExp")) :
+        isLetrecExp(exp) ? makeOk(makeNodeDecl(makeUniqueLetrecExpId(),"LetrecExp")) :
+        isSetExp(exp) ? makeOk(makeNodeDecl(makeUniqueSetExpId(),"SetExp")) :
+        makeFailure<NodeDecl>(`Unknown Expression: ${JSON.stringify(exp)}`);
 
     const mapL4ExpToMermaid = (exp: Exp, id: string): Result<Edge[]> => {
         return makeFailure("");
@@ -69,3 +89,23 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         isExp(exp) ? makeFailure("") :
         makeFailure("Invalid parameter");
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const unparseMermaid = (exp: Graph): Result<string> =>
+    contentIsEmpty(exp.content) ? makeOk(`graph ${exp.dir}\n`) : 
+    makeOk(`graph ${exp.dir}\n${unparseMermaidContent(exp.content)}`) 
+
+
+const unparseMermaidContent = (cont: GraphContent): Result<string> => makeFailure("");
+
