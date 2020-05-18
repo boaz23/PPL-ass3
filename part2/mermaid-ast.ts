@@ -18,12 +18,12 @@
 
 // START Unuion bound exp
 export type GraphContent = AtomicGraph | CompoundGraph ;
-export type Direction = TD | LR;
+export type Dir = TD | LR;
 export type Node = NodeDecl | NodeRef;
 // END Unuion bound exp
 
 //START AST interface
-export interface Graph {tag: "Graph" , dir: Direction , content?: GraphContent};
+export interface Graph {tag: "Graph" , dir: Dir , content?: GraphContent};
 export interface AtomicGraph {tag: "AtomicGraph" , node: NodeDecl};
 export interface TD {tag: "TD"};
 export interface LR {tag: "LR"};
@@ -31,11 +31,10 @@ export interface NodeDecl {tag: "NodeDecl" , id: string , label: string};
 export interface NodeRef {tag:"NodeRef" , id: string};
 export interface CompoundGraph {tag: "CompoundGraph" , edges: Edge[]};
 export interface Edge {tag: "Edge", from: Node, to: Node, label?: string};
-export interface EdgeLabel {tag: "EdgeLabel", var: string};
 //END AST interface
 
 //START Constractors ZONE
-export const makeGraph = (dir:Direction,content?: GraphContent): Graph =>
+export const makeGraph = (dir:Dir,content?: GraphContent): Graph =>
     ({tag: "Graph", dir: dir , content: content});
 
 export const makeAtomicGraph = (node:NodeDecl): AtomicGraph =>
@@ -59,9 +58,6 @@ export const makeCompoundGraph = (edges: Edge[]): CompoundGraph =>
 export const makeEdge = (from: Node, to: Node, label?: string): Edge =>
     ({tag: "Edge", from: from , to: to, label : label});
 
-export const makeEdgeLabel = (Var: string): EdgeLabel =>
-    ({tag: "EdgeLabel", var: Var });
-
 //END Constractors ZONE
 
 //START is ZONE
@@ -73,10 +69,9 @@ export const isNodeDecl = (x: any): x is NodeDecl => x.tag === "NodeDecl";
 export const isNodeRef = (x: any): x is NodeRef => x.tag === "NodeRef";
 export const isCompoundGraph = (x: any): x is CompoundGraph => x.tag === "CompoundGraph";
 export const isEdge = (x: any): x is Edge => x.tag === "Edge";
-export const isEdgeLabel = (x: any): x is EdgeLabel => x.tag === "EdgeLabel";
 //END is ZONE
 
 
 export const isGraphContent = (x: any): x is GraphContent  => isAtomicGraph(x) || isCompoundGraph(x);
-export const isDirection = (x: any): x is Direction => isTD(x) || isLR(x);
+export const isDirection = (x: any): x is Dir => isTD(x) || isLR(x);
 export const isNode = (x: any): x is Node => isNodeDecl(x) || isNodeRef(x);
