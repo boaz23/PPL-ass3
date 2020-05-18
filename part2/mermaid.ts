@@ -50,7 +50,7 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
                 );
                 const expsContents = reduce(
                     (acc: Edge[], content: GraphContent): Edge[] =>
-                        acc.concat(isAtomicGraph(content) ? [] : [topDeclEdgeToRefEdge(content)].concat(rest(content.edges))),
+                        acc.concat(isAtomicGraph(content) ? acc : [topDeclEdgeToRefEdge(content)].concat(rest(content.edges))),
                     [],
                     contents
                 );
