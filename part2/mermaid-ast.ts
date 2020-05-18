@@ -1,11 +1,5 @@
 // ===========================================================
 // AST type models
-import { map, zipWith } from "ramda";
-import { first, second, rest, allT, isEmpty } from "../shared/list";
-import { isArray, isString, isNumericString, isIdentifier } from "../shared/type-predicates";
-import { Result, makeOk, makeFailure, bind, mapResult, safe2 } from "../shared/result";
-import { parse as p, isSexpString, isToken } from "../shared/parser";
-import { Sexp, Token } from "s-expression";
 
 /*
 ;; =============================================================================
@@ -40,7 +34,7 @@ export interface Edge {tag: "Edge", from: Node, to: Node, label?: string};
 export interface EdgeLabel {tag: "EdgeLabel", var: string};
 //END AST interface
 
-//START Constractors ZONE 
+//START Constractors ZONE
 export const makeGraph = (dir:Direction,content?: GraphContent): Graph =>
     ({tag: "Graph", dir: dir , content: content});
 
@@ -68,7 +62,7 @@ export const makeEdge = (from: Node, to: Node, label?: string): Edge =>
 export const makeEdgeLabel = (Var: string): EdgeLabel =>
     ({tag: "EdgeLabel", var: Var });
 
-//END Constractors ZONE 
+//END Constractors ZONE
 
 //START is ZONE
 export const isGraph = (x: any): x is Graph => x.tag === "Graph";
