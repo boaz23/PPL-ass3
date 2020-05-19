@@ -1,5 +1,5 @@
 import { Result, makeFailure, mapResult, makeOk, bind } from "../shared/result";
-import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, contentIsEmpty, isAtomicGraph, CompoundGraph, NodeDecl, Node, isCompoundGraph, isNodeDecl, isNodeRef } from "./mermaid-ast";
+import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, contentIsEmpty, isAtomicGraph, CompoundGraph, NodeDecl, Node, isCompoundGraph, isNodeDecl, isNodeRef, labelIsEmpty } from "./mermaid-ast";
 import { Program, Parsed, isProgram, isExp, Exp, isLetrecExp, isSetExp, isDefineExp, isAppExp, isNumExp, isBoolExp, isStrExp, isPrimOp, isVarRef, isIfExp, isProcExp, isBinding, isLetExp, BoolExp, NumExp, StrExp, PrimOp, VarRef, VarDecl, isAtomicExp, DefineExp, AppExp, IfExp, isVarDecl, ProcExp, Binding, LetExp, isLitExp, LetrecExp, SetExp, LitExp } from "./L4-ast";
 import { reduce, map } from "ramda";
 import { rest, first } from "../shared/list";
@@ -239,9 +239,6 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         makeFailure("Invalid argument for map L4 to mermaid");
 }
 
-
-
-
 // -----------------------------------------------
 // ------------------- UNPARSE -------------------
 // -----------------------------------------------
@@ -256,7 +253,7 @@ const unparseMermaidContent = (cont: GraphContent): string =>
     "";
 
 const unparseMermaidEdge = (edge: Edge): string =>
-    edge.label === undefined ? `${unparse(edge.from)} --> ${unparse(edge.to)}` :
+     labelIsEmpty(edge.label) ? `${unparse(edge.from)} --> ${unparse(edge.to)}` :
     `${unparse(edge.from)} -->|${edge.label}| ${unparse(edge.to)}`
 
 
