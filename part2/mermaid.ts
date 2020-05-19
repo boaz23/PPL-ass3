@@ -1,5 +1,5 @@
 import { Result, makeFailure, mapResult, makeOk, bind } from "../shared/result";
-import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, contentIsEmpty, isAtomicGraph, CompoundGraph, NodeDecl, Node } from "./mermaid-ast";
+import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, contentIsEmpty, isAtomicGraph, CompoundGraph, NodeDecl, Node, isCompoundGraph, isNodeDecl, isNodeRef } from "./mermaid-ast";
 import { Program, Parsed, isProgram, isExp, Exp, isLetrecExp, isSetExp, isDefineExp, isAppExp, isNumExp, isBoolExp, isStrExp, isPrimOp, isVarRef, isIfExp, isProcExp, isBinding, isLetExp, BoolExp, NumExp, StrExp, PrimOp, VarRef, VarDecl, isAtomicExp, DefineExp, AppExp, IfExp, isVarDecl, ProcExp, Binding, LetExp, isLitExp } from "./L4-ast";
 import { reduce, map } from "ramda";
 import { rest, first } from "../shared/list";
@@ -183,6 +183,9 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         makeFailure("Invalid argument for map L4 to mermaid");
 }
 
+
+
+
 // -----------------------------------------------
 // ------------------- UNPARSE -------------------
 // -----------------------------------------------
@@ -191,4 +194,18 @@ export const unparseMermaid = (exp: Graph): Result<string> =>
     makeOk(`graph ${exp.dir}\n${unparseMermaidContent(exp.content)}`)
 
 
-const unparseMermaidContent = (cont: GraphContent): Result<string> => makeFailure("");
+const unparseMermaidContent = (cont: GraphContent): string => 
+    isAtomicGraph(cont) ? `${unparse(cont.node)}` :
+    isCompoundGraph(cont) ? `${map(unparseMermaidEdge,cont.edges).join("\n")}` :
+    "";
+
+const unparseMermaidEdge = (edge: Edge): string =>
+    edge.label === undefined ? `${unparse(edge.from)} --> ${unparse(edge.to)}` :
+    `${unparse(edge.from)} -->|${edge.label}| ${unparse(edge.to)}`
+
+
+
+export const unparse = (node: Node): string =>
+    isNodeDecl(node) ? `${node.id}[${node.label}]` :
+    isNodeRef(node) ? `${node.id}` :
+    "";
