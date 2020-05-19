@@ -3,7 +3,8 @@ import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, ma
 import { Program, Parsed, isProgram, isExp, Exp, isLetrecExp, isSetExp, isDefineExp, isAppExp, isNumExp, isBoolExp, isStrExp, isPrimOp, isVarRef, isIfExp, isProcExp, isBinding, isLetExp, BoolExp, NumExp, StrExp, PrimOp, VarRef, VarDecl, isAtomicExp, DefineExp, AppExp, IfExp, isVarDecl, ProcExp, Binding, LetExp, isLitExp, LetrecExp, SetExp, LitExp } from "./L4-ast";
 import { reduce, map } from "ramda";
 import { rest, first } from "../shared/list";
-import { SExpValue } from "./L4-value";
+import { SExpValue, isEmptySExp, isSymbolSExp, isClosure, isCompoundSExp, CompoundSExp } from "./L4-value";
+import { isNumber, isString, isBoolean } from "../shared/type-predicates";
 
 type L4ASTNode = Exp | VarDecl | Binding | SExpValue;
 
@@ -35,8 +36,16 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
     const makeUniqueLetExpId = makeVarGen("LetExp");
     const makeUniqueBindingsId = makeVarGen("Bindings");
     const makeUniqueLitExpId = makeVarGen("LitExp");
+    const makeUniqueCompoundSExpId = makeVarGen("CompoundSExp");
+    const makeUniqueEmptySExpId = makeVarGen("EmptySExp");
+    const makeUniqueSymbolSExpId = makeVarGen("SymbolSExp");
+    const makeUnique_numberId = makeVarGen("number");
+    const makeUnique_booleanId = makeVarGen("boolean");
+    const makeUnique_stringId = makeVarGen("string");
     const makeUniqueLetrecExpId = makeVarGen("LetrecExp");
     const makeUniqueSetExpId = makeVarGen("SetExp");
+
+    const boolToString = (b: boolean): string => b ? "#t" : "#f";
 
     const topDeclEdgeToRefEdge = (content: CompoundGraph): Edge => {
         const firstEdge = first(content.edges);
@@ -74,24 +83,23 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
                 )].concat(content))
         )
 
-
     const mapL4VarDeclToMermaid = (varDecl: VarDecl): NodeDecl =>
-        makeNodeDecl(makeUniqueVarDeclId(), `VarDecl("${varDecl.var}")`);
+        makeNodeDecl(makeUniqueVarDeclId(), `VarDecl(${varDecl.var})`);
     const mapL4AtomicExpToMermaid = (exp: NumExp | BoolExp | StrExp | PrimOp | VarRef): NodeDecl =>
-        isNumExp(exp) ? makeNodeDecl(makeUniqueNumExpId(), `NumExp("${exp.val.toString()}")`) :
-        isBoolExp(exp) ? makeNodeDecl(makeUniqueBoolExpId(), `BoolExp("${exp.val ? "#t" : "#f"}")`) :
-        isStrExp(exp) ? makeNodeDecl(makeUniqueStrExpId(), `StrExp("${exp.val}")`) :
-        isPrimOp(exp) ? makeNodeDecl(makeUniquePrimOpId(), `PrimOp("${exp.op}")`) :
-        makeNodeDecl(makeUniqueVarRefId(), `VarRef("${exp.var}")`);
+        isNumExp(exp) ? makeNodeDecl(makeUniqueNumExpId(), `NumExp(${exp.val})`) :
+        isBoolExp(exp) ? makeNodeDecl(makeUniqueBoolExpId(), `BoolExp(${boolToString(exp.val)})`) :
+        isStrExp(exp) ? makeNodeDecl(makeUniqueStrExpId(), `StrExp(${exp.val})`) :
+        isPrimOp(exp) ? makeNodeDecl(makeUniquePrimOpId(), `PrimOp(${exp.op})`) :
+        makeNodeDecl(makeUniqueVarRefId(), `VarRef(${exp.var})`);
 
     const mapL4DefineExpToMermaid = (exp: DefineExp): Result<GraphContent> => {
         const defineId = makeUniqueDefineExpId();
         return bind(
             mapL4ChildExpToMermaid(exp.val, makeNodeRef(defineId), "val"),
-            (edges: Edge[]) =>
+            (valContent: Edge[]) =>
                 makeOk(makeCompoundGraph(
                     [makeEdge(makeNodeDecl(defineId, "DefineExp"), mapL4VarDeclToMermaid(exp.var), "var")]
-                    .concat(edges)
+                    .concat(valContent)
                 ))
         );
     }
@@ -161,11 +169,32 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         const setExpId = makeUniqueSetExpId();
         return bind(
             mapL4ChildExpToMermaid(exp.val, makeNodeRef(setExpId), "val"),
-            (edges: Edge[]) =>
+            (valContent: Edge[]) =>
                 makeOk(makeCompoundGraph(
                     [makeEdge(makeNodeDecl(setExpId, "SetExp"), mapL4AtomicExpToMermaid(exp.var), "var")]
-                    .concat(edges)
+                    .concat(valContent)
                 ))
+        );
+    }
+
+    const mapL4ListExpToMermaid = (exp: LitExp): Result<GraphContent> => {
+        const litExpId = makeUniqueLitExpId();
+        return bind(
+            mapL4ChildExpToMermaid(exp.val, makeNodeDecl(litExpId, "LitExp"), "val"),
+            (valContent: Edge[]) => makeOk(
+                makeCompoundGraph(valContent)
+            )
+        );
+    }
+
+    const mapL4CompundSExpToMermaid = (exp: CompoundSExp): Result<GraphContent> => {
+        const compoundSExpId = makeUniqueCompoundSExpId();
+        return bind(
+            mapL4ChildExpToMermaid(exp.val1, makeNodeDecl(compoundSExpId, "CompoundSExp"), "val1"),
+            (val1Content: Edge[]) => bind(mapL4ChildExpToMermaid(exp.val2, makeNodeRef(compoundSExpId), "val2"),
+            (val2Content: Edge[]) => makeOk(
+                makeCompoundGraph(val1Content.concat(val2Content))
+            ))
         );
     }
 
@@ -180,8 +209,15 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         isLetExp(exp) ? mapL4LetExoToMermaid(exp, makeUniqueLetExpId) :
         isLetrecExp(exp) ? mapL4LetExoToMermaid(exp, makeUniqueLetrecExpId) :
         isSetExp(exp) ? mapL4SetExpToMermaid(exp) :
-        isLitExp(exp) ? makeFailure("") :
-        makeFailure(`Unknown Expression: ${JSON.stringify(exp)}`);
+        isLitExp(exp) ? mapL4ListExpToMermaid(exp) :
+        isEmptySExp(exp) ? makeOk(makeAtomicGraph(makeNodeDecl(makeUniqueEmptySExpId(), "EmptySExp"))) :
+        isSymbolSExp(exp) ? makeOk(makeAtomicGraph(makeNodeDecl(makeUniqueSymbolSExpId(), `SymbolSExp(${exp.val})`))) :
+        isCompoundSExp(exp) ? mapL4CompundSExpToMermaid(exp) :
+        isNumber(exp) ? makeOk(makeAtomicGraph(makeNodeDecl(makeUnique_numberId(), `number(${exp})`))) :
+        isString(exp) ? makeOk(makeAtomicGraph(makeNodeDecl(makeUnique_stringId(), `string(${exp})`))) :
+        isBoolean(exp) ? makeOk(makeAtomicGraph(makeNodeDecl(makeUnique_booleanId(), `boolean(${boolToString(exp)})`))) :
+        isClosure(exp) ? makeFailure("Unexpected node: Closure") :
+        makeFailure(`Never: ${JSON.stringify(exp)}`);
 
 
     const mapL4ProgramToMermaid = (program: Program): Result<Graph> => {
