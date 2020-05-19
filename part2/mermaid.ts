@@ -100,17 +100,17 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         );
 
     const makeL4AtomicLabel = (node: L4AtomicASTNode): string =>
-        isNumExp(node) ? `NumExp("${node.val}")` :
-        isBoolExp(node) ? `BoolExp("${boolToString(node.val)}")` :
-        isStrExp(node) ? `StrExp("${node.val}")` :
-        isPrimOp(node) ? `PrimOp("${node.op}")` :
-        isVarRef(node) ? `VarRef("${node.var}")` :
-        isVarDecl(node) ? `VarDecl("${node.var}")` :
-        isEmptySExp(node) ? "EmptySExp" :
-        isSymbolSExp(node) ? `SymbolSExp("${node.val}")` :
-        isNumber(node) ? `number("${node}")` :
-        isString(node) ? `string("${node}")` :
-        `boolean("${boolToString(node)}")`;
+        isNumExp(node) ? `"NumExp(${node.val})"` :
+        isBoolExp(node) ? `"BoolExp(${boolToString(node.val)})"` :
+        isStrExp(node) ? `"StrExp(${node.val})"` :
+        isPrimOp(node) ? `"PrimOp(${node.op})"` :
+        isVarRef(node) ? `"VarRef(${node.var})"` :
+        isVarDecl(node) ? `"VarDecl(${node.var})"` :
+        isEmptySExp(node) ? `EmptySExp` :
+        isSymbolSExp(node) ? `"SymbolSExp(${node.val})"` :
+        isNumber(node) ? `"number(${node})"` :
+        isString(node) ? `"string(${node})"` :
+        `"boolean(${boolToString(node)})"`;
 
     const mapL4DefineExpToMermaid = (exp: DefineExp): Result<GraphContent> => {
         const defineId = makeUniqueDefineExpId();
