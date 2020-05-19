@@ -1,7 +1,7 @@
 // ========================================================
 // L4 normal eval
 import { Sexp } from "s-expression";
-import { map } from "ramda";
+//import { map } from "ramda";
 import { CExp, Exp, IfExp, Program, parseL4Exp } from "./L4-ast";
 import { isAppExp, isBoolExp, isCExp, isDefineExp, isIfExp, isLitExp, isNumExp,
          isPrimOp, isProcExp, isStrExp, isVarRef } from "./L4-ast";
