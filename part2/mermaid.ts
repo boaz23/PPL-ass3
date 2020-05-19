@@ -116,11 +116,16 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         const defineId = makeUniqueDefineExpId();
         return bind(
             mapL4ChildExpToMermaid(exp.val, makeNodeRef(defineId), "val"),
-            (valContent: Edge[]) =>
-                makeOk(makeCompoundGraph(
-                    [makeEdge(makeNodeDecl(defineId, "DefineExp"), makeNodeDecl(makeUniqueVarDeclId(), makeL4AtomicLabel(exp.var)), "var")]
-                    .concat(valContent)
-                ))
+            (valContent: Edge[]) => makeOk(
+                makeCompoundGraph([
+                    makeEdge(
+                        makeNodeDecl(defineId, "DefineExp"),
+                        makeNodeDecl(makeUniqueVarDeclId(), makeL4AtomicLabel(exp.var)),
+                        "var"
+                    )
+                ]
+                .concat(valContent))
+            )
         );
     }
 
@@ -129,11 +134,15 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         return bind(
             mapL4ChildExpToMermaid(exp.rator, makeNodeDecl(appExpId, "AppExp"), "rator"),
             (ratorContent: Edge[]) => bind(
-                mapL4ArrChildrenToMermaid(exp.rands, makeNodeRef(appExpId), makeUniqueRandsId(), "rands"),
-                (randsContent: Edge[]) => makeOk(
-                    makeCompoundGraph(ratorContent.concat(randsContent))
-                )
-            )
+                mapL4ArrChildrenToMermaid(
+                    exp.rands,
+                    makeNodeRef(appExpId),
+                    makeUniqueRandsId(),
+                    "rands"
+                ),
+            (randsContent: Edge[]) => makeOk(
+                makeCompoundGraph(ratorContent.concat(randsContent))
+            ))
         );
     }
 
@@ -142,7 +151,7 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         return bind(
             mapL4ChildExpToMermaid(exp.test, makeNodeDecl(ifExpId, "IfExp"), "test"),
             (testContent: Edge[]) => bind(mapL4ChildExpToMermaid(exp.then, makeNodeRef(ifExpId), "then"),
-            (thenContent: Edge[]) => bind (mapL4ChildExpToMermaid(exp.alt, makeNodeRef(ifExpId), "alt"),
+            (thenContent: Edge[]) => bind(mapL4ChildExpToMermaid(exp.alt, makeNodeRef(ifExpId), "alt"),
             (altContent: Edge[]) => makeOk(
                 makeCompoundGraph(testContent.concat(thenContent).concat(altContent))
             )))
@@ -153,27 +162,45 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         const procExpId = makeUniqueProcExpId();
         return bind(
             mapL4ArrChildrenToMermaid(exp.args, makeNodeDecl(procExpId, "ProcExp"), makeUniqueParamsId(), "args"),
-            (paramsContent: Edge[]) => bind(mapL4ArrChildrenToMermaid(exp.body, makeNodeRef(procExpId), makeUniqueBodyId(), "body"),
+            (paramsContent: Edge[]) => bind(
+                mapL4ArrChildrenToMermaid(
+                    exp.body,
+                    makeNodeRef(procExpId),
+                    makeUniqueBodyId(),
+                    "body"
+                ),
             (bodyContent: Edge[]) => makeOk(
-                makeCompoundGraph(paramsContent.concat(bodyContent)))
-            )
+                makeCompoundGraph(paramsContent.concat(bodyContent))
+            ))
         )
     }
 
     const mapL4BindingToMermaid = (exp: Binding): Result<GraphContent> => {
         const bindingId = makeUniqueBindingId();
         return bind(mapL4ChildExpToMermaid(exp.val, makeNodeRef(bindingId), "val"),
-        (valContent: Edge[]) => makeOk(makeCompoundGraph(
-            [makeEdge(makeNodeDecl(bindingId, "Binding"), makeNodeDecl(makeUniqueVarDeclId(), makeL4AtomicLabel(exp.var)), "var")]
-            .concat(valContent)
-        )));
+        (valContent: Edge[]) => makeOk(
+            makeCompoundGraph([
+                makeEdge(
+                    makeNodeDecl(bindingId, "Binding"),
+                    makeNodeDecl(makeUniqueVarDeclId(), makeL4AtomicLabel(exp.var)),
+                    "var"
+                )
+            ]
+            .concat(valContent))
+        ));
     };
 
     const mapL4LetExoToMermaid = (letExp: LetExp | LetrecExp, idGen: () => string): Result<GraphContent> => {
         const letExpId = idGen();
         return bind(
             mapL4ArrChildrenToMermaid(letExp.bindings, makeNodeDecl(letExpId, letExp.tag), makeUniqueBindingsId(), "bindings"),
-            (bindingContent: Edge[]) => bind(mapL4ArrChildrenToMermaid(letExp.body, makeNodeRef(letExpId), makeUniqueBodyId(), "body"),
+            (bindingContent: Edge[]) => bind(
+                mapL4ArrChildrenToMermaid(
+                    letExp.body,
+                    makeNodeRef(letExpId),
+                    makeUniqueBodyId(),
+                    "body"
+                ),
             (bodyContent: Edge[]) => makeOk(
                 makeCompoundGraph(bindingContent.concat(bodyContent)))
             )
@@ -184,9 +211,12 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         const setExpId = makeUniqueSetExpId();
         return bind(
             mapL4ChildExpToMermaid(setExp.val, makeNodeRef(setExpId), "val"),
-            (valContent: Edge[]) =>
-                makeOk(makeCompoundGraph(
-                    [makeEdge(makeNodeDecl(setExpId, "SetExp"), makeNodeDecl(makeUniqueVarRefId(), makeL4AtomicLabel(setExp.var)), "var")]
+            (valContent: Edge[]) => makeOk(
+                makeCompoundGraph([
+                    makeEdge(
+                        makeNodeDecl(setExpId, "SetExp"),
+                        makeNodeDecl(makeUniqueVarRefId(), makeL4AtomicLabel(setExp.var)),
+                        "var")]
                     .concat(valContent)
                 ))
         );
