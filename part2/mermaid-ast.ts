@@ -34,7 +34,7 @@ export interface Edge {tag: "Edge", from: Node, to: Node, label?: string};
 //END AST interface
 
 //START Constractors ZONE
-export const makeGraph = (dir:Dir,content?: GraphContent): Graph =>
+export const makeGraph = (dir: Dir, content?: GraphContent): Graph =>
     ({tag: "Graph", dir: dir , content: content});
 
 export const makeAtomicGraph = (node:NodeDecl): AtomicGraph =>
@@ -75,8 +75,3 @@ export const isEdge = (x: any): x is Edge => x.tag === "Edge";
 export const isGraphContent = (x: any): x is GraphContent  => isAtomicGraph(x) || isCompoundGraph(x);
 export const isDirection = (x: any): x is Dir => isTD(x) || isLR(x);
 export const isNode = (x: any): x is Node => isNodeDecl(x) || isNodeRef(x);
-
-export const contentIsEmpty = (content: any): content is undefined => content === undefined;
-export const labelIsEmpty = (label: any): label is undefined => label === undefined;
-
-

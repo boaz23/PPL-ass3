@@ -1,5 +1,5 @@
 import { Result, makeFailure, mapResult, makeOk, bind } from "../shared/result";
-import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, contentIsEmpty, isAtomicGraph, CompoundGraph, NodeDecl, Node, isCompoundGraph, isNodeDecl, isNodeRef, labelIsEmpty } from "./mermaid-ast";
+import { Graph, GraphContent, makeGraph, makeTD, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, isAtomicGraph, CompoundGraph, NodeDecl, Node, isCompoundGraph, isNodeDecl, isNodeRef } from "./mermaid-ast";
 import { Program, Parsed, isProgram, isExp, Exp, isLetrecExp, isSetExp, isDefineExp, isAppExp, isNumExp, isBoolExp, isStrExp, isPrimOp, isVarRef, isIfExp, isProcExp, isBinding, isLetExp, BoolExp, NumExp, StrExp, PrimOp, VarRef, VarDecl, isAtomicExp, DefineExp, AppExp, IfExp, isVarDecl, ProcExp, Binding, LetExp, isLitExp, LetrecExp, SetExp, LitExp } from "./L4-ast";
 import { reduce, map } from "ramda";
 import { rest, first } from "../shared/list";
@@ -100,17 +100,17 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
         );
 
     const makeL4AtomicLabel = (node: L4AtomicASTNode): string =>
-        isNumExp(node) ? `"NumExp(${node.val})"` :
-        isBoolExp(node) ? `"BoolExp(${boolToString(node.val)})"` :
-        isStrExp(node) ? `"StrExp(${node.val})"` :
-        isPrimOp(node) ? `"PrimOp(${node.op})"` :
-        isVarRef(node) ? `"VarRef(${node.var})"` :
-        isVarDecl(node) ? `"VarDecl(${node.var})"` :
+        isNumExp(node) ? `NumExp(${node.val})` :
+        isBoolExp(node) ? `BoolExp(${boolToString(node.val)})` :
+        isStrExp(node) ? `StrExp(${node.val})` :
+        isPrimOp(node) ? `PrimOp(${node.op})` :
+        isVarRef(node) ? `VarRef(${node.var})` :
+        isVarDecl(node) ? `VarDecl(${node.var})` :
         isEmptySExp(node) ? `EmptySExp` :
-        isSymbolSExp(node) ? `"SymbolSExp(${node.val})"` :
-        isNumber(node) ? `"number(${node})"` :
-        isString(node) ? `"string(${node})"` :
-        `"boolean(${boolToString(node)})"`;
+        isSymbolSExp(node) ? `SymbolSExp(${node.val})` :
+        isNumber(node) ? `number(${node})` :
+        isString(node) ? `string(${node})` :
+        `boolean(${boolToString(node)})`;
 
     const mapL4DefineExpToMermaid = (exp: DefineExp): Result<GraphContent> => {
         const defineId = makeUniqueDefineExpId();
@@ -295,21 +295,21 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
 // ------------------- UNPARSE -------------------
 // -----------------------------------------------
 export const unparseMermaid = (exp: Graph): Result<string> =>
-    contentIsEmpty(exp.content) ? makeOk(`graph ${exp.dir}\n`) :
-    makeOk(`graph ${exp.dir}\n${unparseMermaidContent(exp.content)}`)
+    exp.content === undefined ? makeOk(`graph ${exp.dir.tag}\n`) :
+    makeOk(`graph ${exp.dir.tag}\n${unparseMermaidContent(exp.content)}`)
 
 
-const unparseMermaidContent = (cont: GraphContent): string => 
+const unparseMermaidContent = (cont: GraphContent): string =>
     isAtomicGraph(cont) ? `${unparse(cont.node)}` :
-    isCompoundGraph(cont) ? `${map(unparseMermaidEdge,cont.edges).join("\n")}` :
+    isCompoundGraph(cont) ? `${map(unparseMermaidEdge, cont.edges).join("")}` :
     "";
 
 const unparseMermaidEdge = (edge: Edge): string =>
-     labelIsEmpty(edge.label) ? `${unparse(edge.from)} --> ${unparse(edge.to)}` :
-    `${unparse(edge.from)} -->|${edge.label}| ${unparse(edge.to)}`
+     edge.label === undefined ? `${unparse(edge.from)} --> ${unparse(edge.to)}\n` :
+    `${unparse(edge.from)} -->|${edge.label}| ${unparse(edge.to)}\n`
 
 
 export const unparse = (node: Node): string =>
-    isNodeDecl(node) ? `${node.id}[${node.label}]` :
+    isNodeDecl(node) ? `${node.id}["${node.label}"]` :
     isNodeRef(node) ? `${node.id}` :
     "";
