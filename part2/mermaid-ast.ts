@@ -77,3 +77,6 @@ export const isDirection = (x: any): x is Dir => isTD(x) || isLR(x);
 export const isNode = (x: any): x is Node => isNodeDecl(x) || isNodeRef(x);
 
 export const contentIsEmpty = (content: any): content is undefined => content === undefined;
+export const labelIsEmpty = (label: any): label is undefined => label === undefined;
+
+
