@@ -114,13 +114,14 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
 
     const mapL4DefineExpToMermaid = (exp: DefineExp): Result<GraphContent> => {
         const defineId = makeUniqueDefineExpId();
+        const varId = makeUniqueVarDeclId();
         return bind(
             mapL4ChildExpToMermaid(exp.val, makeNodeRef(defineId), "val"),
             (valContent: Edge[]) => makeOk(
                 makeCompoundGraph([
                     makeEdge(
                         makeNodeDecl(defineId, "DefineExp"),
-                        makeNodeDecl(makeUniqueVarDeclId(), makeL4AtomicLabel(exp.var)),
+                        makeNodeDecl(varId, makeL4AtomicLabel(exp.var)),
                         "var"
                     )
                 ]
@@ -177,12 +178,13 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
 
     const mapL4BindingToMermaid = (exp: Binding): Result<GraphContent> => {
         const bindingId = makeUniqueBindingId();
+        const varId = makeUniqueVarDeclId();
         return bind(mapL4ChildExpToMermaid(exp.val, makeNodeRef(bindingId), "val"),
         (valContent: Edge[]) => makeOk(
             makeCompoundGraph([
                 makeEdge(
                     makeNodeDecl(bindingId, "Binding"),
-                    makeNodeDecl(makeUniqueVarDeclId(), makeL4AtomicLabel(exp.var)),
+                    makeNodeDecl(varId, makeL4AtomicLabel(exp.var)),
                     "var"
                 )
             ]
@@ -209,13 +211,14 @@ export const mapL4toMermaid = (exp: Parsed): Result<Graph> => {
 
     const mapL4SetExpToMermaid = (setExp: SetExp): Result<GraphContent> => {
         const setExpId = makeUniqueSetExpId();
+        const varId = makeUniqueVarRefId();
         return bind(
             mapL4ChildExpToMermaid(setExp.val, makeNodeRef(setExpId), "val"),
             (valContent: Edge[]) => makeOk(
                 makeCompoundGraph([
                     makeEdge(
                         makeNodeDecl(setExpId, "SetExp"),
-                        makeNodeDecl(makeUniqueVarRefId(), makeL4AtomicLabel(setExp.var)),
+                        makeNodeDecl(varId, makeL4AtomicLabel(setExp.var)),
                         "var")]
                     .concat(valContent)
                 ))
