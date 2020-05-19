@@ -16,7 +16,7 @@
                 "--colors",
                 "--require",
                 "ts-node/register",
-                "part3/tryes.ts",
+                "part2/mermaid-manual.test.ts",
             ],
             "sourceMaps": true,
             "console": "integratedTerminal",
