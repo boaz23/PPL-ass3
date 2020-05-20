@@ -1,10 +1,12 @@
 import { Result, makeFailure, mapResult, makeOk, bind } from "../shared/result";
 import { Graph, GraphContent, makeGraph, makeCompoundGraph, makeEdge, makeNodeDecl, makeAtomicGraph, Edge, makeNodeRef, isAtomicGraph, CompoundGraph, Node, isCompoundGraph, isNodeDecl, isNodeRef } from "./mermaid-ast";
-import { Program, Parsed, isProgram, isExp, Exp, isLetrecExp, isSetExp, isDefineExp, isAppExp, isNumExp, isBoolExp, isStrExp, isPrimOp, isVarRef, isIfExp, isProcExp, isBinding, isLetExp, VarRef, VarDecl, DefineExp, AppExp, IfExp, isVarDecl, ProcExp, Binding, LetExp, isLitExp, LetrecExp, SetExp, LitExp } from "./L4-ast";
+import { Program, Parsed, isProgram, isExp, Exp, isLetrecExp, isSetExp, isDefineExp, isAppExp, isNumExp, isBoolExp, isStrExp, isPrimOp, isVarRef, isIfExp, isProcExp, isBinding, isLetExp, VarRef, VarDecl, DefineExp, AppExp, IfExp, isVarDecl, ProcExp, Binding, LetExp, isLitExp, LetrecExp, SetExp, LitExp, parseL4Exp, parseL4Program } from "./L4-ast";
 import { reduce, map } from "ramda";
-import { rest, first } from "../shared/list";
+import { rest, first, isEmpty } from "../shared/list";
 import { SExpValue, isEmptySExp, isSymbolSExp, isClosure, isCompoundSExp, CompoundSExp } from "./L4-value";
-import { isNumber, isString, isBoolean } from "../shared/type-predicates";
+import { isNumber, isString, isBoolean, isArray } from "../shared/type-predicates";
+import { parse, isToken } from "../shared/parser";
+import { Sexp } from "s-expression";
 
 // NOTE for the code reviewer:
 // Since we need a counter for each type of node,
@@ -289,4 +291,25 @@ const unparseNode = (node: Node): string =>
 // ---------------- L4 To Mermaid ----------------
 // -----------------------------------------------
 export const L4toMermaid = (concrete: string): Result<string> =>
-    makeFailure("Implement me");
+    bind(
+        bind(
+            parse(concrete),
+            (sexp: Sexp): Result<Graph> =>
+                sexp === "" ? makeOk(makeGraph("TD")) :
+                isEmpty(sexp) ? makeFailure("Unexpected empty expression or program") :
+                parseL4ToMermaid(sexp)
+        ),
+        (graph: Graph) => unparseMermaid(graph)
+    );
+
+const parseL4ToMermaid = (sexp: Sexp): Result<Graph> =>
+    bind(parseL4delegate(sexp), (exp: Parsed): Result<Graph> => mapL4toMermaid(exp));
+
+const parseL4delegate = (sexp: Sexp): Result<Parsed> =>
+    isToken(sexp) ? parseL4Exp(sexp) :
+    isArray(sexp) ? (
+        first(sexp) === "L4" ?
+        parseL4Program(sexp) :
+        parseL4Exp(sexp)
+    ) :
+    makeFailure("Never");
