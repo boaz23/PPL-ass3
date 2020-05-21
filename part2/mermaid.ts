@@ -295,7 +295,7 @@ export const L4toMermaid = (concrete: string): Result<string> =>
         bind(
             parse(concrete),
             (sexp: Sexp): Result<Graph> =>
-                sexp === "" ? makeOk(makeGraph("TD")) :
+                sexp === "" ? makeFailure("Unexpected empty string") :
                 isEmpty(sexp) ? makeFailure("Unexpected empty expression or program") :
                 parseL4ToMermaid(sexp)
         ),
