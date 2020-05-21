@@ -132,11 +132,8 @@ describe('L4 AST To Mermaid AST', () => {
 
 describe('L4 code to mermaid code', () => {
     it('Translates an empty string to Mermaid code', () => {
-        bind(L4toMermaid(''), (str: string) => writeToFile('my-graph.txt', str));
-        expect(L4toMermaid('')).to.deep.eq(makeOk(
-`graph TD
-`
-        ));
+        // bind(L4toMermaid(''), (str: string) => writeToFile('my-graph.txt', str));
+        expect(L4toMermaid('')).to.satisfy(isFailure);
     });
 
     it('Translates an empty parentheses to Mermaid code', () => {
