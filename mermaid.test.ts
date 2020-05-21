@@ -124,15 +124,190 @@ describe('L4 AST To Mermaid AST', () => {
         expect(bind(parseL4(L4_Program1_code),
         (l4ast: Parsed) => {
             const mermaidAST = mapL4ASTtoMermaidAST("graph5.mmd", l4ast);
-            console.log(JSON.stringify(mermaidAST));
+            // console.log(JSON.stringify(mermaidAST));
             return mermaidAST;
         })).to.deep.eq(MermaidAST_Program1);
     });
 });
 
 describe('L4 code to mermaid code', () => {
-    it(`Translates program 1`, () => {
-        expect(L4toMermaid(L4_Program1_code)).to.deep.eq(makeOk(Mermaid_Program1_code));
+    it('Translates an empty string to Mermaid code', () => {
+        bind(L4toMermaid(''), (str: string) => writeToFile('my-graph.txt', str));
+        expect(L4toMermaid('')).to.deep.eq(makeOk(
+`graph TD
+`
+        ));
+    });
+
+    it('Translates an empty parentheses to Mermaid code', () => {
+        expect(L4toMermaid('()')).to.satisfy(isFailure);
+    });
+
+    it('Translates NumExp to Mermaid code', () => {
+        expect(L4toMermaid('5')).to.deep.eq(makeOk(
+`graph TD
+NumExp_1["NumExp(5)"]`
+        ));
+    });
+
+    it('Translates BoolExp to Mermaid code', () => {
+        expect(L4toMermaid('#t')).to.deep.eq(makeOk(
+`graph TD
+BoolExp_1["BoolExp(#t)"]`
+        ));
+    });
+
+    it('Translates StrExp to Mermaid code', () => {
+        expect(L4toMermaid('"my str"')).to.deep.eq(makeOk(
+`graph TD
+StrExp_1["StrExp(my str)"]`
+        ));
+    });
+
+    it('Translates PrimOp to Mermaid code', () => {
+        expect(L4toMermaid('+')).to.deep.eq(makeOk(
+`graph TD
+PrimOp_1["PrimOp(+)"]`
+        ));
+    });
+
+    it('Translates VarRef to Mermaid code', () => {
+        expect(L4toMermaid('my-var')).to.deep.eq(makeOk(
+`graph TD
+VarRef_1["VarRef(my-var)"]`
+        ));
+    });
+
+    it('Translates DefineExp to Mermaid code', () => {
+        expect(L4toMermaid('(define x 7)')).to.deep.eq(makeOk(
+`graph TD
+DefineExp_1[DefineExp] -->|var| VarDecl_1["VarDecl(x)"]
+DefineExp_1 -->|val| NumExp_1["NumExp(7)"]
+`
+        ));
+    });
+
+    it('Translates AppExp to Mermaid code', () => {
+        expect(L4toMermaid('(+ x 7)')).to.deep.eq(makeOk(
+`graph TD
+AppExp_1[AppExp] -->|rator| PrimOp_1["PrimOp(+)"]
+AppExp_1 -->|rands| Rands_1[:]
+Rands_1 --> VarRef_1["VarRef(x)"]
+Rands_1 --> NumExp_1["NumExp(7)"]
+`
+        ));
+    });
+
+    it('Translates IfExp to Mermaid code', () => {
+        expect(L4toMermaid('(if #f x 6)')).to.deep.eq(makeOk(
+`graph TD
+IfExp_1[IfExp] -->|test| BoolExp_1["BoolExp(#f)"]
+IfExp_1 -->|then| VarRef_1["VarRef(x)"]
+IfExp_1 -->|alt| NumExp_1["NumExp(6)"]
+`
+        ));
+    });
+
+    it('Translates ProcExp to Mermaid code', () => {
+        expect(L4toMermaid('(lambda (a b) b 5)')).to.deep.eq(makeOk(
+`graph TD
+ProcExp_1[ProcExp] -->|args| Params_1[:]
+Params_1 --> VarDecl_1["VarDecl(a)"]
+Params_1 --> VarDecl_2["VarDecl(b)"]
+ProcExp_1 -->|body| Body_1[:]
+Body_1 --> VarRef_1["VarRef(b)"]
+Body_1 --> NumExp_1["NumExp(5)"]
+`
+        ));
+    });
+
+    it('Translates LetExp to Mermaid code', () => {
+        expect(L4toMermaid('(let ((a x) (b 7)) (+ a b))')).to.deep.eq(makeOk(
+`graph TD
+LetExp_1[LetExp] -->|bindings| Bindings_1[:]
+Bindings_1 --> Binding_1[Binding]
+Binding_1 -->|var| VarDecl_1["VarDecl(a)"]
+Binding_1 -->|val| VarRef_1["VarRef(x)"]
+Bindings_1 --> Binding_2[Binding]
+Binding_2 -->|var| VarDecl_2["VarDecl(b)"]
+Binding_2 -->|val| NumExp_1["NumExp(7)"]
+LetExp_1 -->|body| Body_1[:]
+Body_1 --> AppExp_1[AppExp]
+AppExp_1 -->|rator| PrimOp_1["PrimOp(+)"]
+AppExp_1 -->|rands| Rands_1[:]
+Rands_1 --> VarRef_2["VarRef(a)"]
+Rands_1 --> VarRef_3["VarRef(b)"]
+`
+        ));
+    });
+
+    it('Translates LetrecExp to Mermaid code', () => {
+        expect(L4toMermaid('(letrec ((f (lambda (x) (f x)))) (f 2))')).to.deep.eq(makeOk(
+`graph TD
+LetrecExp_1[LetrecExp] -->|bindings| Bindings_1[:]
+Bindings_1 --> Binding_1[Binding]
+Binding_1 -->|var| VarDecl_1["VarDecl(f)"]
+Binding_1 -->|val| ProcExp_1[ProcExp]
+ProcExp_1 -->|args| Params_1[:]
+Params_1 --> VarDecl_2["VarDecl(x)"]
+ProcExp_1 -->|body| Body_1[:]
+Body_1 --> AppExp_1[AppExp]
+AppExp_1 -->|rator| VarRef_1["VarRef(f)"]
+AppExp_1 -->|rands| Rands_1[:]
+Rands_1 --> VarRef_2["VarRef(x)"]
+LetrecExp_1 -->|body| Body_2[:]
+Body_2 --> AppExp_2[AppExp]
+AppExp_2 -->|rator| VarRef_3["VarRef(f)"]
+AppExp_2 -->|rands| Rands_2[:]
+Rands_2 --> NumExp_1["NumExp(2)"]
+`
+        ));
+    });
+
+    it('Translates SetExp to Mermaid code', () => {
+        expect(L4toMermaid('(set! x 7)')).to.deep.eq(makeOk(
+`graph TD
+SetExp_1[SetExp] -->|var| VarRef_1["VarRef(x)"]
+SetExp_1 -->|val| NumExp_1["NumExp(7)"]
+`
+        ));
+    });
+
+    it('Translates LitExp EmptySExp to Mermaid code', () => {
+        expect(L4toMermaid('\'()')).to.deep.eq(makeOk(
+`graph TD
+LitExp_1[LitExp] -->|val| EmptySExp_1["EmptySExp"]
+`
+        ));
+    });
+
+    it('Translates LitExp SymbolSExp to Mermaid code', () => {
+        expect(L4toMermaid('\'hi')).to.deep.eq(makeOk(
+`graph TD
+LitExp_1[LitExp] -->|val| SymbolSExp_1["SymbolSExp(hi)"]
+`
+        ));
+    });
+
+    it('Translates LitExp CompoundSExp to Mermaid code', () => {
+        expect(L4toMermaid('\'(24 #f "hello there")')).to.deep.eq(makeOk(
+`graph TD
+LitExp_1[LitExp] -->|val| CompoundSExp_1[CompoundSExp]
+CompoundSExp_1 -->|val1| number_1["number(24)"]
+CompoundSExp_1 -->|val2| CompoundSExp_2[CompoundSExp]
+CompoundSExp_2 -->|val1| boolean_1["boolean(#f)"]
+CompoundSExp_2 -->|val2| CompoundSExp_3[CompoundSExp]
+CompoundSExp_3 -->|val1| string_1["string(hello there)"]
+CompoundSExp_3 -->|val2| EmptySExp_1["EmptySExp"]
+`
+        ));
+    });
+
+    it('Test Test', () => {
+        expect(L4toMermaid('\'(\'aa)')).to.deep.eq(makeOk(
+`graph TD
+`
+        ));
     });
 
     it(`Translate L4 code to Mermaid code 2`, () => {
@@ -168,20 +343,8 @@ Body_1 --> NumExp_1["NumExp(1)"]
         ));
     });
 
-    it('Translates an empty string to Mermaid code', () => {
-        bind(L4toMermaid(""), (str: string) => writeToFile('my-graph.txt', str));
-        expect(L4toMermaid("")).to.deep.eq(makeOk(
-`graph TD
-`
-        ));
-    });
-
-    it('Translates an empty parentheses to Mermaid code', () => {
-        expect(L4toMermaid("()")).to.satisfy(isFailure);
-    });
-
-    it('Translates an empty parentheses to Mermaid code', () => {
-        expect(L4toMermaid("()")).to.satisfy(isFailure);
+    it(`Translates program 1`, () => {
+        expect(L4toMermaid(L4_Program1_code)).to.deep.eq(makeOk(Mermaid_Program1_code));
     });
 });
 
