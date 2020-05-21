@@ -303,13 +303,6 @@ CompoundSExp_3 -->|val2| EmptySExp_1["EmptySExp"]
         ));
     });
 
-    it('Test Test', () => {
-        expect(L4toMermaid('\'(\'aa)')).to.deep.eq(makeOk(
-`graph TD
-`
-        ));
-    });
-
     it(`Translate L4 code to Mermaid code 2`, () => {
         expect(L4toMermaid(`
             (lambda (x y)
