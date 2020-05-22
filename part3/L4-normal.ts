@@ -98,11 +98,7 @@ const normalEvalVarRef = (varRef: VarRef, env: Env): Result<Value> =>
     bind(applyEnv(env, varRef.var), (p: Value): Result<Value> =>
         isPromise(p) ? (
             isAppExp(p.exp) ? makeOk(p) :
-            isProcExp(p.exp) ? (
-                isRecEnv(p.env) ? applyRecEnv(p.env, varRef.var) :
-                // have to be from a define expression, therefore it must come from a recursive environment
-                makeFailure("Promise env of defined var (from DefineExp) of Proc exp is not recursive")
-            ) :
+            isProcExp(p.exp) && isRecEnv(p.env) ? applyRecEnv(p.env, varRef.var) :
             normalEvalCExp(p.exp, p.env)
         ) :
         makeFailure("Var in global enviroment does not map to a promise")
