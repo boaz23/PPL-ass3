@@ -111,10 +111,7 @@ const normalEvalVarRef = (varRef: VarRef, env: Env): Result<Value> =>
 const normalFullyEvalVarRef = (varRef: VarRef, env: Env): Result<Value> =>
     bind(applyEnv(env, varRef.var), (val: Value): Result<Value> =>
         isPromise(val) ? (
-            isProcExp(val.exp) ? (
-                isRecEnv(val.env) ? applyRecEnv(val.env, varRef.var) :
-                applyEnv(val.env, varRef.var)
-            ) :
+            isProcExp(val.exp) && isRecEnv(val.env) ? applyRecEnv(val.env, varRef.var) :
             normalFullyEvalCExp(val.exp, val.env)
         ) :
         isClosure(val) ? makeOk(val) :
