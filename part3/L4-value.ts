@@ -6,8 +6,7 @@ import { Env } from './L4-env-normal';
 import { append } from 'ramda';
 import { isArray, isNumber, isString } from '../shared/type-predicates';
 
-
-export type Value = SExpValue | Closure;
+export type Value = SExpValue | Closure | Promise;
 
 export type Functional = PrimOp | Closure;
 export const isFunctional = (x: any): x is Functional => isPrimOp(x) || isClosure(x);
@@ -26,6 +25,17 @@ export const makeClosure = (params: VarDecl[], body: CExp[], env: Env): Closure 
 export const isClosure = (x: any): x is Closure => x.tag === "Closure";
 
 // ========================================================
+// Promise
+export interface Promise {
+    tag: "Promise";
+    exp: CExp;
+    env: Env;
+}
+export const makePromise = (exp: CExp, env: Env): Promise =>
+    ({tag: "Promise", exp: exp, env: env});
+export const isPromise = (x: any): x is Promise => x.tag == "Promise";
+
+// ========================================================
 // SExp
 export interface CompoundSExp {
     tag: "CompoundSexp";
@@ -40,10 +50,10 @@ export interface SymbolSExp {
     val: string;
 }
 
-export type SExpValue = number | boolean | string | PrimOp | Closure | SymbolSExp | EmptySExp | CompoundSExp;
+export type SExpValue = number | boolean | string | PrimOp | Closure | Promise | SymbolSExp | EmptySExp | CompoundSExp;
 export const isSExp = (x: any): x is SExpValue =>
     typeof(x) === 'string' || typeof(x) === 'boolean' || typeof(x) === 'number' ||
-    isSymbolSExp(x) || isCompoundSExp(x) || isEmptySExp(x) || isPrimOp(x) || isClosure(x);
+    isSymbolSExp(x) || isCompoundSExp(x) || isEmptySExp(x) || isPrimOp(x) || isClosure(x) || isPromise(x);
 
 export const makeCompoundSExp = (val1: SExpValue, val2: SExpValue): CompoundSExp =>
     ({tag: "CompoundSexp", val1: val1, val2 : val2});
@@ -84,4 +94,5 @@ export const valueToString = (val: Value): string =>
     isSymbolSExp(val) ? val.val :
     isEmptySExp(val) ? "'()" :
     isCompoundSExp(val) ? compoundSExpToString(val) :
+    isPromise(val) ? `<Promise>` :
     "Error: unknown value type "+val
