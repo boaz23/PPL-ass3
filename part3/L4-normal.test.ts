@@ -1,9 +1,10 @@
 import { expect } from 'chai';
-import { parseL4, makePrimOp } from './L4-ast';
+import {parseL4, makePrimOp, isAppExp, isPrimOp} from './L4-ast';
 import { listPrim } from "./evalPrimitive";
 import { evalNormalParse, evalNormalProgram } from './L4-normal';
-import { isClosure, Value } from './L4-value';
+import {isClosure, isPromise, Value} from './L4-value';
 import { makeOk, isOk, Result, bind } from "../shared/result";
+import {isEmpty} from "../shared/list";
 
 describe('L4 Normal Eval', () => {
     it('evaluates atoms', () => {
@@ -136,5 +137,35 @@ describe('L4 Normal Eval', () => {
             (L4 (define f (lambda (x) (display x) (newline) (+ x 1)))
                 (define g (lambda (x) 5))
                 (g (f 0)))`), evalNormalProgram)).to.deep.equal(makeOk(5));
+    });
+
+    it('evaluates a program which gives an error in applicative order, but not in normal order 2', () => {
+        expect(bind(parseL4(`
+            (L4 ((lambda (x) 5) (+ y 3)))
+        `), evalNormalProgram)).to.deep.eq(makeOk(5));
+    });
+
+    it('evaluates a program which gives an error in applicative order, but not in normal order 3 ', () => {
+        expect(bind(parseL4(`
+            (L4 ((lambda (x) (if #t 2 (1 #f))) (+ y 3)))
+        `), evalNormalProgram)).to.deep.eq(makeOk(2));
+    });
+
+    it('evaluates a program which gives an error in applicative order, but not in normal order 4', () => {
+        expect(bind(parseL4(`
+            (L4 (define x (-)) x)
+        `), evalNormalProgram)).satisfy((result: Result<Value>) =>
+            isOk(result) && isPromise(result.value) && isAppExp(result.value.exp) &&
+            isPrimOp(result.value.exp.rator) && result.value.exp.rator.op === "-" &&
+            isEmpty(result.value.exp.rands)
+        );
+    });
+
+    it('checks shadowing', () => {
+       expect(bind(parseL4(`(L4
+           (define id (lambda (x) x))
+           (define x 5)
+           (id (- x 1))
+       )`), evalNormalProgram)).to.deep.eq(makeOk(4));
     });
 });

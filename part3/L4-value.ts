@@ -94,5 +94,5 @@ export const valueToString = (val: Value): string =>
     isSymbolSExp(val) ? val.val :
     isEmptySExp(val) ? "'()" :
     isCompoundSExp(val) ? compoundSExpToString(val) :
-    isPromise(val) ? `<Promise>` :
+    isPromise(val) ? `<Promise ${JSON.stringify(val.exp)} ${val.env.tag}>` :
     "Error: unknown value type "+val
