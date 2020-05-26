@@ -168,4 +168,25 @@ describe('L4 Normal Eval', () => {
            (id (- x 1))
        )`), evalNormalProgram)).to.deep.eq(makeOk(4));
     });
+
+    it('checks variables are promises', () => {
+        expect(bind(parseL4(`(L4
+           (define x ((lambda (y) y) 5))
+            x
+       )`), evalNormalProgram)).satisfy((result: Result<Value>) => isOk(result) && isPromise(result.value));
+    });
+
+    it('checks variables are promises', () => {
+        expect(bind(parseL4(`(L4
+           (define x ((lambda (y) y) 5))
+            (let ((y x)) y)
+       )`), evalNormalProgram)).satisfy((result: Result<Value>) => isOk(result) && isPromise(result.value));
+    });
+
+    it('checks variables are promises', () => {
+        expect(bind(parseL4(`(L4
+           (define x ((lambda (y) y) 5))
+            ((lambda (y) y) x)
+       )`), evalNormalProgram)).to.deep.eq(makeOk(5));
+    });
 });

@@ -55,8 +55,7 @@ const normalEvalDefineExp = (def: DefineExp, rest: Exp[], env: Env): Result<Valu
 
 const normalEvalDefineExpProc = (varName: string, proc: ProcExp, rest: Exp[], env: Env): Result<Value> => {
     const recEnv: Env = makeRecEnv([varName], [proc.args], [proc.body], env);
-    const extEnv: Env = makeExtEnv([varName], [makePromise(proc, recEnv)], env);
-    return normalEvalProgramExps(rest, extEnv);
+    return normalEvalProgramExps(rest, recEnv);
 };
 
 const normalEvalDefineExpNonProc = (def: DefineExp, rest: Exp[], env: Env): Result<Value> => {
@@ -95,21 +94,18 @@ const normalFullyEvalCExp = (exp: CExp, env: Env): Result<Value> =>
     makeFailure(`Unexpected expression ${exp}`);
 
 const normalEvalVarRef = (varRef: VarRef, env: Env): Result<Value> =>
-    bind(applyEnv(env, varRef.var), (p: Value): Result<Value> =>
-        isPromise(p) ? (
-            isAppExp(p.exp) ? makeOk(p) :
-            isProcExp(p.exp) && isRecEnv(p.env) ? applyRecEnv(p.env, varRef.var) :
-            normalEvalCExp(p.exp, p.env)
+    bind(applyEnv(env, varRef.var), (val: Value): Result<Value> =>
+        isPromise(val) ? (
+            isAppExp(val.exp) ? makeOk(val) :
+            normalEvalCExp(val.exp, val.env)
         ) :
+        isClosure(val) ? makeOk(val) :
         makeFailure("Var in global enviroment does not map to a promise")
     );
 
 const normalFullyEvalVarRef = (varRef: VarRef, env: Env): Result<Value> =>
     bind(applyEnv(env, varRef.var), (val: Value): Result<Value> =>
-        isPromise(val) ? (
-            isProcExp(val.exp) && isRecEnv(val.env) ? applyRecEnv(val.env, varRef.var) :
-            normalFullyEvalCExp(val.exp, val.env)
-        ) :
+        isPromise(val) ? normalFullyEvalCExp(val.exp, val.env) :
         isClosure(val) ? makeOk(val) :
         makeFailure("Var in function maps to an actual value, send help")
     );
