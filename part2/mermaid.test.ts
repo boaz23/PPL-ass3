@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import { mapL4toMermaid, L4toMermaid } from './part2/mermaid';
-import { makeProgram, makeProcExp, makeVarDecl, makeNumExp, makeAppExp, makePrimOp, makeVarRef, makeBoolExp, makeStrExp, makeDefineExp, makeLitExp, Parsed, unparse, parseL4 } from './part2/L4-ast';
-import { makeNodeDecl, makeGraph, makeCompoundGraph, makeEdge, makeNodeRef, makeAtomicGraph, Graph } from './part2/mermaid-ast';
-import { makeOk, Result, bind, isFailure } from './shared/result';
-import { makeCompoundSExp, makeEmptySExp } from './part2/L4-value';
-import { writeToFile } from './part2/mermaid-utils';
+import { mapL4toMermaid, L4toMermaid } from './mermaid';
+import { makeProgram, makeProcExp, makeVarDecl, makeNumExp, makeAppExp, makePrimOp, makeVarRef, makeBoolExp, makeStrExp, makeDefineExp, makeLitExp, Parsed, unparse, parseL4 } from './L4-ast';
+import { makeNodeDecl, makeGraph, makeCompoundGraph, makeEdge, makeNodeRef, makeAtomicGraph, Graph } from './mermaid-ast';
+import { makeOk, Result, bind, isFailure } from '../shared/result';
+import { makeCompoundSExp, makeEmptySExp } from './L4-value';
+import { writeToFile } from './mermaid-utils';
 
 const mapL4ASTtoMermaidAST = (file: string, exp: Parsed): Result<Graph> => {
     const mermaidAST = mapL4toMermaid(exp);

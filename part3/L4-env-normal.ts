@@ -42,9 +42,9 @@ export const makeExtEnv = (vs: string[], vals: Promise[], env: Env): ExtEnv =>
 export const makeRecEnv = (vs: string[], paramss: VarDecl[][], bodiess: CExp[][], env: Env): RecEnv =>
     ({tag: "RecEnv", vars: vs, paramss: paramss, bodiess: bodiess, nextEnv: env});
 
-export const isEmptyEnv = (x: any): x is EmptyEnv => x.tag === "EmptyEnv";
-export const isExtEnv = (x: any): x is ExtEnv => x.tag === "ExtEnv";
-export const isRecEnv = (x: any): x is RecEnv => x.tag === "RecEnv";
+const isEmptyEnv = (x: any): x is EmptyEnv => x.tag === "EmptyEnv";
+const isExtEnv = (x: any): x is ExtEnv => x.tag === "ExtEnv";
+const isRecEnv = (x: any): x is RecEnv => x.tag === "RecEnv";
 
 export const isEnv = (x: any): x is Env => isEmptyEnv(x) || isExtEnv(x) || isRecEnv(x);
 
@@ -52,14 +52,13 @@ export const isEnv = (x: any): x is Env => isEmptyEnv(x) || isExtEnv(x) || isRec
 export const applyEnv = (env: Env, v: string): Result<Value> =>
     isEmptyEnv(env) ? makeFailure(`var not found ${v}`) :
     isExtEnv(env) ? applyExtEnv(env, v) :
-    isRecEnv(env) ? applyRecEnv(env, v) :
-    makeFailure("Never");
+    applyRecEnv(env, v);
 
-export const applyExtEnv = (env: ExtEnv, v: string): Result<Value> =>
+const applyExtEnv = (env: ExtEnv, v: string): Result<Value> =>
     env.vars.includes(v) ? makeOk(env.vals[env.vars.indexOf(v)]) :
     applyEnv(env.nextEnv, v);
 
-export const applyRecEnv = (env: RecEnv, v: string): Result<Value> =>
+const applyRecEnv = (env: RecEnv, v: string): Result<Value> =>
     env.vars.includes(v) ? makeOk(makeClosure(env.paramss[env.vars.indexOf(v)],
                                               env.bodiess[env.vars.indexOf(v)],
                                               env)) :

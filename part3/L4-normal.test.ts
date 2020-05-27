@@ -1,10 +1,10 @@
 import { expect } from 'chai';
-import {parseL4, makePrimOp, isAppExp, isPrimOp} from './L4-ast';
+import { parseL4, makePrimOp, isAppExp, isPrimOp } from './L4-ast';
 import { listPrim } from "./evalPrimitive";
 import { evalNormalParse, evalNormalProgram } from './L4-normal';
-import {isClosure, isPromise, Value} from './L4-value';
+import { isClosure, isPromise, Value } from './L4-value';
 import { makeOk, isOk, Result, bind } from "../shared/result";
-import {isEmpty} from "../shared/list";
+import { isEmpty } from "../shared/list";
 
 describe('L4 Normal Eval', () => {
     it('evaluates atoms', () => {

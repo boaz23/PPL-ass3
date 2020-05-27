@@ -5,7 +5,7 @@ import { Sexp } from "s-expression";
 import { CExp, Exp, IfExp, Program, parseL4Exp, DefineExp, isLetExp, isLetrecExp, isSetExp, ProcExp, LetExp, Binding, AppExp, PrimOp, VarDecl, VarRef } from "./L4-ast";
 import { isAppExp, isBoolExp, isCExp, isDefineExp, isIfExp, isLitExp, isNumExp,
          isPrimOp, isProcExp, isStrExp, isVarRef } from "./L4-ast";
-import { applyEnv, makeEmptyEnv, Env, makeExtEnv, makeRecEnv, applyRecEnv, isRecEnv } from './L4-env-normal';
+import { applyEnv, makeEmptyEnv, Env, makeExtEnv, makeRecEnv } from './L4-env-normal';
 import { applyPrimitive } from "./evalPrimitive";
 import { isClosure, makeClosure, Value, isPromise, makePromise, Closure } from "./L4-value";
 import { first, rest, isEmpty } from '../shared/list';
