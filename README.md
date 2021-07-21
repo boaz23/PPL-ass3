@@ -6,4 +6,5 @@ The second part of the assignment transform an L4 program (a subset of Scheme) t
 We also had to convert the mermaid AST to the concreate syntax of mermaid.  
 The third part of the assignment was about implementing a normal order environment based interpreter for L4.
 
-All of the assignments descriptions in this course can be found [here](https://www.cs.bgu.ac.il/~ppl202/Assignments).
+[Full assignment description](https://www.cs.bgu.ac.il/~ppl202/Assignments/Assignment_3)  
+[Course assignments descriptions](https://www.cs.bgu.ac.il/~ppl202/Assignments)
